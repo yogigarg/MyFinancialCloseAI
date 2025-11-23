@@ -1,0 +1,209 @@
+# FinClose AI - Native Windows Quick Reference
+
+## 🚀 Super Quick Start (No Docker!)
+
+### Prerequisites
+✅ Python 3.11+ installed
+✅ PostgreSQL installed and running
+
+### Setup (One Time)
+
+```powershell
+# 1. Set up PostgreSQL database
+psql -U postgres
+# Then run commands from POSTGRES_SETUP.md
+
+# 2. Configure environment
+cd C:\Projects\finclose-ai
+copy .env.example .env
+notepad .env  # Add your credentials
+
+# 3. Create virtual environment
+python -m venv venv
+
+# 4. Start application
+.\start-all.ps1
+```
+
+**Done! Open http://localhost:8501**
+
+---
+
+## 🎯 Daily Usage
+
+```powershell
+# Start everything
+cd C:\Projects\finclose-ai
+.\start-all.ps1
+
+# Access: http://localhost:8501
+# Login: justine / demo
+
+# Stop everything
+.\stop-all.ps1
+```
+
+---
+
+## 📝 Manual Start (Alternative)
+
+### Terminal 1: MCP Server
+```powershell
+cd C:\Projects\finclose-ai
+.\venv\Scripts\Activate.ps1
+cd mcp-server
+python netsuite_server.py
+```
+
+### Terminal 2: Streamlit
+```powershell
+cd C:\Projects\finclose-ai
+.\venv\Scripts\Activate.ps1
+cd streamlit-app
+streamlit run app.py
+```
+
+---
+
+## 🗄️ PostgreSQL Quick Commands
+
+```powershell
+# Connect to database
+psql -U finclose -d finclose_ai
+
+# Inside PostgreSQL:
+\dt workflow.*          # List tables
+SELECT * FROM workflow.executions;  # View data
+\q                      # Exit
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Virtual Environment Issues
+```powershell
+# Allow scripts
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Recreate venv
+rmdir /s venv
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+### Install Dependencies
+```powershell
+# From project root with venv activated
+pip install -r mcp-server\requirements.txt
+pip install -r agents\requirements.txt
+pip install -r streamlit-app\requirements.txt
+pip install psycopg2-binary python-dotenv
+```
+
+### Database Connection Error
+```powershell
+# Check PostgreSQL is running
+sc query postgresql-x64-15
+
+# Test connection
+psql -U finclose -d finclose_ai
+
+# Fix password in .env
+notepad .env  # Update DATABASE_URL
+```
+
+### Port Already in Use
+```powershell
+# Find process on port 8501
+netstat -ano | findstr :8501
+
+# Kill it
+taskkill /PID <PID> /F
+```
+
+---
+
+## 📁 Important Files
+
+```
+finclose-ai/
+├── .env                       ← Your credentials
+├── start-all.ps1             ← Start script
+├── stop-all.ps1              ← Stop script
+├── NATIVE_WINDOWS_SETUP.md   ← Full setup guide
+├── POSTGRES_SETUP.md         ← Database setup
+├── venv/                     ← Virtual environment
+├── mcp-server/               ← NetSuite integration
+├── agents/                   ← AI workflows
+└── streamlit-app/            ← Web UI
+```
+
+---
+
+## ✅ Verify Setup
+
+```powershell
+# 1. Database
+psql -U finclose -d finclose_ai -c "SELECT 1"
+
+# 2. Python
+python --version  # Should be 3.11+
+
+# 3. Virtual environment
+.\venv\Scripts\Activate.ps1
+pip list | findstr langgraph
+
+# 4. Start services
+.\start-all.ps1
+
+# 5. Access UI
+# Open http://localhost:8501
+# Login with justine/demo
+
+# 6. Run workflow
+# Click Workflows → ZIP Accrual → Start Workflow
+```
+
+---
+
+## 🎓 Full Documentation
+
+- **NATIVE_WINDOWS_SETUP.md** - Complete setup guide
+- **POSTGRES_SETUP.md** - Database setup details
+- **README.md** - Project documentation
+- **PROJECT_OVERVIEW.md** - What's included
+
+---
+
+## 🌐 URLs & Credentials
+
+**Web UI**: http://localhost:8501
+
+**Logins**:
+- justine / demo
+- selena / demo
+- will / demo
+
+**Database**: 
+- Host: localhost:5432
+- Database: finclose_ai
+- User: finclose
+- Password: (in your .env file)
+
+---
+
+## 🆘 Quick Help
+
+**Can't start?**
+→ Check NATIVE_WINDOWS_SETUP.md Troubleshooting section
+
+**Database errors?**
+→ See POSTGRES_SETUP.md
+
+**Still stuck?**
+→ Email: support@jadeglobal.com
+
+---
+
+**That's it! Simple, no Docker needed.** 🎉

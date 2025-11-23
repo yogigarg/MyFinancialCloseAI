@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15.4
+    container_name: finclose-postgres
+    environment:
+      POSTGRES_DB: finclose_ai
+      POSTGRES_USER: finclose
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finclose"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7.0-alpine
+    container_name: finclose-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NetSuite MCP Server
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: finclose-mcp-server
+    environment:
+      - NETSUITE_ACCOUNT_ID=${NETSUITE_ACCOUNT_ID}
+      - NETSUITE_CONSUMER_KEY=${NETSUITE_CONSUMER_KEY}
+      - NETSUITE_CONSUMER_SECRET=${NETSUITE_CONSUMER_SECRET}
+      - NETSUITE_TOKEN_ID=${NETSUITE_TOKEN_ID}
+      - NETSUITE_TOKEN_SECRET=${NETSUITE_TOKEN_SECRET}
+      - NETSUITE_REST_URL=${NETSUITE_REST_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Streamlit Application
+  streamlit-app:
+    build:
+      context: ./streamlit-app
+      dockerfile: Dockerfile
+    container_name: finclose-streamlit
+    environment:
+      - BACKEND_API_URL=http://agent-workers:8001
+      - DATABASE_URL=postgresql://finclose:${POSTGRES_PASSWORD:-changeme}@postgres:5432/finclose_ai
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8501:8501"
+    depends_on:
+      - postgres
+      - redis
+      - mcp-server
+    restart: unless-stopped
+    volumes:
+      - ./streamlit-app:/app
+
+  # Agent Workers (FastAPI backend)
+  agent-workers:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: finclose-agents
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-finclose-ai}
+      - DATABASE_URL=postgresql://finclose:${POSTGRES_PASSWORD:-changeme}@postgres:5432/finclose_ai
+      - REDIS_URL=redis://redis:6379/0
+      - MCP_SERVER_URL=http://mcp-server:8000
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - redis
+      - mcp-server
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: finclose-network

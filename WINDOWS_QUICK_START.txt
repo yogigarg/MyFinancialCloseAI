@@ -1,0 +1,160 @@
+# Windows Quick Setup - FinClose AI
+
+## ⚡ Super Quick Start (5 Steps)
+
+### 1. Install Prerequisites (One-time)
+- **Docker Desktop**: https://www.docker.com/products/docker-desktop
+- **Python 3.11+**: https://www.python.org/downloads/
+- ✅ Check "Add Python to PATH" during install
+- ✅ Start Docker Desktop after install
+
+### 2. Extract ZIP
+- Extract `finclose-ai.zip` to `C:\Projects\finclose-ai`
+
+### 3. Configure
+```powershell
+# Open PowerShell in project folder
+cd C:\Projects\finclose-ai
+
+# Copy template
+copy .env.example .env
+
+# Edit with Notepad
+notepad .env
+
+# Add your credentials:
+# - NETSUITE_* (all 6 values)
+# - ANTHROPIC_API_KEY
+# - POSTGRES_PASSWORD (change from default)
+```
+
+### 4. Run Setup
+```powershell
+# Right-click PowerShell → Run as Administrator
+cd C:\Projects\finclose-ai
+
+# Allow scripts (first time only)
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Run setup
+.\setup-windows.ps1
+```
+
+Wait 5-10 minutes for first-time setup.
+
+### 5. Start & Access
+```powershell
+# Start all services
+docker-compose up -d
+
+# Open browser
+# http://localhost:8501
+
+# Login: justine / demo
+```
+
+---
+
+## 🎯 Essential Commands
+
+### Check Status
+```powershell
+docker-compose ps          # All services status
+docker-compose logs -f     # View logs (Ctrl+C to exit)
+```
+
+### Start/Stop
+```powershell
+docker-compose up -d       # Start all
+docker-compose down        # Stop all
+docker-compose restart streamlit-app  # Restart one
+```
+
+### Troubleshooting
+```powershell
+# Reset everything
+docker-compose down -v
+.\setup-windows.ps1
+docker-compose up -d
+
+# Check specific service
+docker-compose logs streamlit-app
+```
+
+---
+
+## 🌐 URLs
+
+- **Web UI**: http://localhost:8501
+- **MCP Server**: http://localhost:8000
+- **Demo Users**: justine/demo, selena/demo, will/demo
+
+---
+
+## 📁 File Locations
+
+```
+C:\Projects\finclose-ai\
+├── .env                    ← Your credentials (edit this!)
+├── WINDOWS_SETUP.md        ← Full Windows guide
+├── setup-windows.ps1       ← Setup script
+├── docker-compose.yml      ← Container config
+├── mcp-server/            ← NetSuite integration
+├── agents/                ← AI agents
+└── streamlit-app/         ← Web UI
+```
+
+---
+
+## ⚠️ Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Docker not running | Start Docker Desktop |
+| Port 8501 in use | `netstat -ano \| findstr :8501` then kill process |
+| Script won't run | Run PowerShell as Administrator |
+| Can't access UI | Check `docker-compose logs streamlit-app` |
+| Database error | Run `docker-compose down -v` then setup again |
+
+---
+
+## 🆘 Quick Help
+
+1. **Check logs**: `docker-compose logs -f`
+2. **Read full guide**: Open `WINDOWS_SETUP.md`
+3. **Restart service**: `docker-compose restart <service-name>`
+4. **Email**: support@jadeglobal.com
+
+---
+
+## ✅ Verify Working
+
+```powershell
+# All these should work:
+docker-compose ps                          # All "Up"
+curl http://localhost:8501                 # Streamlit loads
+docker-compose exec postgres psql -U finclose -d finclose_ai -c "SELECT 1"  # Returns 1
+```
+
+---
+
+## 🎓 Next Steps
+
+1. Login to http://localhost:8501
+2. Go to **Workflows** page
+3. Click **ZIP Accrual** → "Start Workflow"
+4. Watch it run!
+5. Go to **Approvals** to see results
+
+---
+
+## 📚 Full Documentation
+
+- `WINDOWS_SETUP.md` - Complete Windows guide
+- `README.md` - Full project documentation
+- `PROJECT_OVERVIEW.md` - What's included
+- `QUICKSTART.md` - General quick start
+
+---
+
+**That's it! You're ready to automate your month-end close on Windows!** 🚀
